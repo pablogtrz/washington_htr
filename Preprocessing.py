@@ -33,7 +33,7 @@ class Preprocessing:
     return ImageInputSet(inverted_images)
 
   @staticmethod
-  def split_data(image_set: ImageInputSet, label_set: WordInputSet, shuffle=True):
+  def get_labeled_images(image_set: ImageInputSet, label_set: WordInputSet, vocabulary, shuffle=True):
     images = []
     labels = []
     
@@ -41,5 +41,18 @@ class Preprocessing:
 
     for image_input in images_from_set:
       images.append(np.array(image_input.img))
-      labels.append(np.array(label_set.getWordInputFromImage(image_input.name).word))
+      label = label_set.getWordInputFromImage(image_input.filename).word
+      label = Preprocessing.char_to_num(label, vocabulary)
+      labels.append(np.array(label))
     return images, labels
+
+  @staticmethod
+  def char_to_num(word, vocabulary):
+     letters = word.split('-')
+     numbers = list(map(lambda letter: vocabulary.index(letter), letters))
+     return numbers
+
+  @staticmethod
+  def num_to_char(numbers, vocabulary):
+    letters = list(map(lambda num: vocabulary[num], numbers))
+    return letters

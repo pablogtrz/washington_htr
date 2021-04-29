@@ -8,7 +8,6 @@ class ImageInput:
     self.filename = filename
     self.original_width = width if width > 0 else self.img.size[0]
     self.original_height = height if height > 0 else self.img.size[1]
-    # self.original_height = self.img.size
     self.label = label
 
 class ImageInputSet:
@@ -18,6 +17,9 @@ class ImageInputSet:
   def append(self, image):
     self.images.append(image)
 
+  def size(self):
+    return len(self.images)
+
   def getMaxWidth(self):
     max_width = 0
     for image_input in self.images:
@@ -25,6 +27,7 @@ class ImageInputSet:
         max_width = image_input.original_width
     return max_width
     
-  def fromSet(self, set):
-    return list(filter(lambda i: i.filename.startswith(set), self.images))
-    
+  def fromSet(self, key):
+    return list(filter(lambda i: i.filename.startswith(key), self.images))
+
+  

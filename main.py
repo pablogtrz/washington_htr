@@ -16,61 +16,43 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 
-# Read images
+# Data Loading
 ## Prepare the images
-base_width = 512
 base_height = 128
 
 images_from_files = DataLoading.loadImagesFromPath('./washington_dataset/words')
 max_width = images_from_files.getMaxWidth()
+
 resized_images = Preprocessing.resizeImages(images_from_files, max_width, base_height)
 image_collection = Preprocessing.invertImages(resized_images)
 
 print("Number of images:", len(image_collection.images))
-print("First image resized size:", image_collection.images[25].original_width, 'x', image_collection.images[25].original_height)
-plt.imshow(image_collection.images[25].img)
-plt.show()
 
-# Data Loading
 ## Load Sets
 
-test_keys = DataLoading.getKeysFromFile('./washington_dataset/sets/test.txt')
 train_keys = DataLoading.getKeysFromFile('./washington_dataset/sets/train.txt')
+test_keys = DataLoading.getKeysFromFile('./washington_dataset/sets/test.txt')
 valid_keys = DataLoading.getKeysFromFile('./washington_dataset/sets/valid.txt')
 
-test_set = DataLoading.getImageInputSetFromKeys(image_collection, test_keys)
-train_set = DataLoading.getImageInputSetFromKeys(image_collection, train_keys)
-valid_set = DataLoading.getImageInputSetFromKeys(image_collection, valid_keys)
+train_set, test_set, valid_set = DataLoading.split_in_sets(image_collection, train_keys, test_keys, valid_keys)
 
-print('Size of test set: ', len(test_set.images))
-print('Size of train set: ', len(train_set.images))
-print('Size of valid set: ', len(valid_set.images))
+print('Size of test set: ', test_set.size())
+print('Size of train set: ', train_set.size())
+print('Size of valid set: ', valid_set.size())
 
-exit()
 # Data Loading
 ## Load Labels
 
 labels = DataLoading.getLabelsFromFile('./washington_dataset/word_labels.txt')
 characters = labels.getSetOfChars()
 
-print('Characters: ', labels.getSetOfChars())
+print('Number of used chars: ', len(characters))
 
 # Preprocessing
 
-# Mapping characters to integers
-char_to_num = layers.experimental.preprocessing.StringLookup(
-    vocabulary=list(characters), num_oov_indices=0, mask_token=None
-)
+labels.set_words_length_to_max()
+x_train, y_train = Preprocessing.get_labeled_images(train_set, labels, characters, False)
+print('Example label:', y_train[33])
 
-# Mapping integers back to original characters
-num_to_char = layers.experimental.preprocessing.StringLookup(
-    vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
-)
-
-labels.getWordInputFromImage('275-01-01.png')
-x_train, y_train = Preprocessing.split_data(train_set, labels, False)
-# train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-
-print(y_train[33])
 plt.imshow(x_train[33])
 plt.show()
